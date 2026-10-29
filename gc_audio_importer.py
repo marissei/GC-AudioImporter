@@ -99,3 +99,25 @@ def convert(ffmpeg, src, out_dir, fmt="ogg", quality=5):
         lines = (result.stderr or "").strip().splitlines()
         raise RuntimeError(lines[-1] if lines else "ffmpeg failed")
     return out_path
+
+
+def process_files(files, out_dir, fmt, quality, log):
+    ffmpeg = find_ffmpeg()
+    if not ffmpeg:
+        log("Couldn't find ffmpeg. Put ffmpeg.exe next to this program.")
+        return 0
+
+    os.makedirs(out_dir, exist_ok=True)
+    done = 0
+    for src in files:
+        name = os.path.basename(src)
+        try:
+            _, notes = inspect_mp3(src)
+            log(f"{name}: " + (", ".join(notes) if notes else "looks clean already"))
+            out = convert(ffmpeg, src, out_dir, fmt, quality)
+            log(f"   -> {os.path.basename(out)}  done")
+            done += 1
+        except Exception as e:
+            log(f"   !! failed: {e}")
+    log(f"Finished, {done}/{len(files)} converted.")
+    return done
