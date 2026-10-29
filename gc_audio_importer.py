@@ -71,3 +71,31 @@ def inspect_mp3(path):
     if found["id3v1"]:
         notes.append("ID3v1 tag at the end")
     return found, notes
+
+
+def convert(ffmpeg, src, out_dir, fmt="ogg", quality=5):
+    base = os.path.splitext(os.path.basename(src))[0]
+    out_path = os.path.join(out_dir, f"{base}.{fmt}")
+
+    cmd = [
+        ffmpeg, "-y", "-v", "error",
+        "-i", src,
+        "-map", "0:a:0",
+        "-vn",
+        "-map_metadata", "-1",
+        "-fflags", "+bitexact",
+    ]
+
+    if fmt == "wav":
+        cmd += ["-c:a", "pcm_s16le", "-ar", "44100"]
+    else:
+        cmd += ["-c:a", "libvorbis", "-q:a", str(quality), "-ar", "44100"]
+
+    cmd.append(out_path)
+
+    result = subprocess.run(cmd, capture_output=True, text=True,
+                            creationflags=NO_WINDOW)
+    if result.returncode != 0:
+        lines = (result.stderr or "").strip().splitlines()
+        raise RuntimeError(lines[-1] if lines else "ffmpeg failed")
+    return out_path
