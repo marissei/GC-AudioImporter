@@ -150,3 +150,14 @@ class App(tk.Tk):
         self.files = []
         self.out_dir = tk.StringVar(value=cfg.get("out_dir", ""))
         self.fmt = tk.StringVar(value=cfg.get("fmt", "ogg"))
+
+        pad = {"padx": 10, "pady": 4}
+
+        top = ttk.Frame(self)
+        top.pack(fill="both", expand=True, **pad)
+        self.listbox = tk.Listbox(top, height=6, selectmode="extended")
+        self.listbox.pack(side="left", fill="both", expand=True)
+        sb = ttk.Scrollbar(top, command=self.listbox.yview)
+        sb.pack(side="right", fill="y")
+        self.listbox.config(yscrollcommand=sb.set)
+        
