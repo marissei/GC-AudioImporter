@@ -121,3 +121,11 @@ def process_files(files, out_dir, fmt, quality, log):
             log(f"   !! failed: {e}")
     log(f"Finished, {done}/{len(files)} converted.")
     return done
+
+
+def load_config():
+    try:
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
