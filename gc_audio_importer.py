@@ -137,3 +137,16 @@ def save_config(cfg):
             json.dump(cfg, f)
     except OSError:
         pass
+
+
+class App(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title(APP_NAME)
+        self.geometry("620x480")
+        self.minsize(520, 420)
+
+        cfg = load_config()
+        self.files = []
+        self.out_dir = tk.StringVar(value=cfg.get("out_dir", ""))
+        self.fmt = tk.StringVar(value=cfg.get("fmt", "ogg"))
