@@ -129,3 +129,11 @@ def load_config():
             return json.load(f)
     except (OSError, ValueError):
         return {}
+
+
+def save_config(cfg):
+    try:
+        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+            json.dump(cfg, f)
+    except OSError:
+        pass
