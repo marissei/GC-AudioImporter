@@ -161,3 +161,25 @@ class App(tk.Tk):
         sb.pack(side="right", fill="y")
         self.listbox.config(yscrollcommand=sb.set)
         
+        btns = ttk.Frame(self)
+        btns.pack(fill="x", **pad)
+        ttk.Button(btns, text="Add MP3s...", command=self.add_files).pack(side="left")
+        ttk.Button(btns, text="Remove selected", command=self.remove_selected).pack(side="left", padx=6)
+
+        row = ttk.Frame(self)
+        row.pack(fill="x", **pad)
+        ttk.Label(row, text="Output folder:").pack(side="left")
+        ttk.Entry(row, textvariable=self.out_dir).pack(side="left", fill="x", expand=True, padx=6)
+        ttk.Button(row, text="Browse...", command=self.pick_out).pack(side="left")
+
+        row2 = ttk.Frame(self)
+        row2.pack(fill="x", **pad)
+        ttk.Label(row2, text="Format:").pack(side="left")
+        ttk.Radiobutton(row2, text="OGG (small)", variable=self.fmt, value="ogg").pack(side="left", padx=6)
+        ttk.Radiobutton(row2, text="WAV (biggest, safest)", variable=self.fmt, value="wav").pack(side="left")
+
+        self.go = ttk.Button(self, text="Fix my audio", command=self.run)
+        self.go.pack(**pad)
+
+        self.log_box = tk.Text(self, height=9, state="disabled", wrap="word")
+        self.log_box.pack(fill="both", expand=True, **pad)
