@@ -183,3 +183,59 @@ class App(tk.Tk):
 
         self.log_box = tk.Text(self, height=9, state="disabled", wrap="word")
         self.log_box.pack(fill="both", expand=True, **pad)
+
+        if not find_ffmpeg():
+            self.log("Heads up: ffmpeg not found. Drop ffmpeg.exe next to this program.")
+
+    def log(self, msg):
+        def write():
+            self.log_box.config(state="normal")
+            self.log_box.insert("end", msg + "\n")
+            self.log_box.see("end")
+            self.log_box.config(state="disabled")
+        self.after(0, write)
+
+    def add_files(self):
+        picked = filedialog.askopenfilenames(
+            title="Pick your MP3s", filetypes=[("MP3 audio", "*.mp3"), ("All files", "*.*")])
+        for p in picked:
+            if p not in self.files:
+                self.files.append(p)
+                self.listbox.insert("end", os.path.basename(p))
+
+    def remove_selected(self):
+        for idx in reversed(self.listbox.curselection()):
+            self.listbox.delete(idx)
+            del self.files[idx]
+
+    def pick_out(self):
+        d = filedialog.askdirectory(title="Where should the fixed files go?")
+        if d:
+            self.out_dir.set(d)
+
+    def run(self):
+        if not self.files:
+            messagebox.showinfo(APP_NAME, "Add at least one MP3 first.")
+            return
+        if not self.out_dir.get():
+            messagebox.showinfo(APP_NAME, "Pick an output folder first (the game's music folder).")
+            return
+
+        save_config({"out_dir": self.out_dir.get(), "fmt": self.fmt.get()})
+        self.go.config(state="disabled")
+
+        def work():
+            process_files(list(self.files), self.out_dir.get(), self.fmt.get(), 5, self.log)
+            self.after(0, lambda: self.go.config(state="normal"))
+        threading.Thread(target=work, daemon=True).start()
+
+
+def cli(argv):
+    import argparse
+    p = argparse.ArgumentParser(description="Clean MP3s so Gunman Contracts doesn't lag on them.")
+    p.add_argument("files", nargs="+", help="MP3 files to fix")
+    p.add_argument("-o", "--out", required=True, help="output folder")
+    p.add_argument("-f", "--format", choices=["ogg", "wav"], default="ogg")
+    p.add_argument("-q", "--quality", type=int, default=5, help="ogg quality 0-10 (default 5)")
+    a = p.parse_args(argv)
+    process_files(a.files, a.out, a.format, a.quality, print)
